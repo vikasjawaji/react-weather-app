@@ -47,24 +47,39 @@ const CloseButton = styled.span`
   color: white;
   position: absolute;
 `;
+const ErrorMessage = styled.span`
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+`;
 
 function App() {
   const [city, updateCity] = useState();
   const [weather, updateWeather] = useState();
+  const [error, setError] = useState(null);
   const fetchWeather = async (e) => {
     e.preventDefault();
-    const response = await Axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=fe4feefa8543e06d4f3c66d92c61b69c`,
-    );
-    updateWeather(response.data);
+    try {
+      const response = await Axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=fe4feefa8543e06d4f3c66d92c61b69c`,
+      );
+      updateWeather(response.data);
+      setError(null);
+    } catch (error) {
+      updateWeather(null); // reset the weather state
+      console.log(error);
+      setError("No city found, Please enter a valid city name.");// show error message to user
+    }
   };
+  
+  
   return (
     <Container>
       <AppLabel>React Weather App</AppLabel>
-      {city && weather ? (
+      <CityComponent updateCity={updateCity} fetchWeather={fetchWeather} />
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {city && weather && !error && (
         <WeatherComponent weather={weather} city={city} />
-      ) : (
-        <CityComponent updateCity={updateCity} fetchWeather={fetchWeather} />
       )}
     </Container>
   );
